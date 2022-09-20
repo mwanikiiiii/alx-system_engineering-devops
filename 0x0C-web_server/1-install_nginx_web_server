@@ -1,21 +1,11 @@
 #!/usr/bin/env bash
-#
-# Install NGINX on my server
+# A Bash script that configures a new Ubuntu machine to respect the requirements:
+#+ Install nginx
+#+ Nginx should be listening on port 80
+#+ When querying Nginx at its root / with a GET request (requesting a page) using curl, it must return a page that contains the string Hello World!
 
-apt-get -y update
-apt-get -y install nginx
-
-cat > /var/www/html/index.html << 'EOF' 
-<html>
-  <head>
-    <title>Holberton School</title>
-  </head>
-  <body>
-    <p>Holberton School for the win!</p>
-  </body>
-</html>
-EOF
-
-service nginx start
-
-ufw allow 'Nginx HTTP'
+sudo apt-get -y update
+sudo apt-get -y upgrade
+sudo apt-get -y install nginx
+sudo service nginx start
+echo "Hello World!" | sudo tee /usr/share/nginx/html/index.html
