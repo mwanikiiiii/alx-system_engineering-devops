@@ -1,20 +1,29 @@
 #!/usr/bin/python3
 """
-Summarize the TODO lists of all employees and write it to a file as JSON
+Uses https://jsonplaceholder.typicode.com to return information about all
+employee's todo list progress
 """
-from json import dump
-from requests import get
 
-USERS = 'https://jsonplaceholder.typicode.com/users'
-TODOS = 'https://jsonplaceholder.typicode.com/todos'
+import json
+import requests
 
 if __name__ == '__main__':
-    with open('todo_all_employees.json', 'w') as ostream:
-        dump({
-            str(user['id']): [{
-                "username": user['username'],
-                "task": task['title'],
-                "completed": task['completed'],
-            } for task in get(TODOS, params={'userId': user['id']}).json()]
-            for user in get(USERS).json()
-        }, ostream)
+    users = requests.get("https://jsonplaceholder.typicode.com/users",
+                         verify=False).json()
+    userdict = {}
+    usernamedict = {}
+    for user in users:
+        uid = user.get("id")
+        userdict[uid] = []
+        usernamedict[uid] = user.get("username")
+    todo = requests.get("https://jsonplaceholder.typicode.com/todos",
+                        verify=False).json()
+    for task in todo:
+        taskdict = {}
+        uid = task.get("userId")
+        taskdict["task"] = task.get('title')
+        taskdict["completed"] = task.get('completed')
+        taskdict["username"] = usernamedict.get(uid)
+        userdict.get(uid).append(taskdict)
+    with open("todo_all_employees.json", 'w') as jsonfile:
+        json.dump(userdict, jsonfile)

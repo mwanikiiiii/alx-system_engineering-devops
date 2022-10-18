@@ -1,26 +1,28 @@
 #!/usr/bin/python3
 """
-Summarize an employee's TODO list and write it to a file as JSON
+Uses https://jsonplaceholder.typicode.com along with an employee ID to
+return information about the employee's todo list progress
 """
-from argparse import ArgumentParser
-from json import dump
-from os import path
-from requests import get
+
+import json
+import requests
 from sys import argv
 
-USERS = 'https://jsonplaceholder.typicode.com/users'
-TODOS = 'https://jsonplaceholder.typicode.com/todos'
-
 if __name__ == '__main__':
-    parser = ArgumentParser(prog=path.basename(argv[0]))
-    parser.add_argument('id', type=int, help='employee ID')
-    args = parser.parse_args()
-    user = get('/'.join([USERS, str(args.id)])).json()
-    with open('.'.join([str(args.id), 'json']), 'w') as ostream:
-        dump({
-            str(args.id): [{
-                "task": task['title'],
-                "completed": task['completed'],
-                "username": user['username'],
-            } for task in get(TODOS, params={'userId': args.id}).json()]
-        }, ostream)
+    userId = argv[1]
+    user = requests.get("https://jsonplaceholder.typicode.com/users/{}".
+                        format(userId), verify=False).json()
+    todo = requests.get("https://jsonplaceholder.typicode.com/todos?userId={}".
+                        format(userId), verify=False).json()
+    username = user.get('username')
+    tasks = []
+    for task in todo:
+        task_dict = {}
+        task_dict["task"] = task.get('title')
+        task_dict["completed"] = task.get('completed')
+        task_dict["username"] = username
+        tasks.append(task_dict)
+    jsonobj = {}
+    jsonobj[userId] = tasks
+    with open("{}.json".format(userId), 'w') as jsonfile:
+        json.dump(jsonobj, jsonfile)
